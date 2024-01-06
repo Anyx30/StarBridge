@@ -62,7 +62,7 @@ contract IntergalacticTravel is ERC721, VRFConsumerBaseV2 {
         return requestId;
     }
 
-    function getLastRequestId() external returns(uint256 lastRequestId){
+    function getLastRequestId() external view returns(uint256){
         return lastRequestId;
     }
 
