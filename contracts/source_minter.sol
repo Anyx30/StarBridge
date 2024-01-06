@@ -6,8 +6,9 @@ import { IRouterClient } from "@chainlink/contracts-ccip/src/v0.8/ccip/interface
 import { LinkTokenInterface } from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/INFT.sol";
 
-contract SOURCE_MINTER {
+contract SourceMinter {
 
     error DestinationChainNotAllowed(uint64 destinationChainSelector);
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees);
@@ -21,6 +22,7 @@ contract SOURCE_MINTER {
 
     IRouterClient public s_router;
     LinkTokenInterface public linkToken;
+    INFT public space;
 
     modifier onlyAllowlistedDestinationChain(uint64 _destinationChainSelector) {
         if (!allowlistedDestinationChains[_destinationChainSelector])
@@ -31,9 +33,10 @@ contract SOURCE_MINTER {
     mapping(uint64 chainSelector => bool isAllowed) allowlistedDestinationChains;
     mapping(uint64 chainSelector => bool isAllowed) allowlistedSourceChains;
 
-    constructor(address _router, address _linkToken) {
+    constructor(address _router, address _linkToken, address _nft) {
         s_router = IRouterClient(_router);
         linkToken = LinkTokenInterface(_linkToken);
+        space = INFT(_nft);
     }
 
     function allowlistDestinationChain(uint64 _destinationChainSelector, bool allowed) external {
@@ -45,11 +48,11 @@ contract SOURCE_MINTER {
     }
 
     function mintOnDestinationChain(uint64 _destinationChainSelector, address _receiver,
-        PayFeesIn payFeesIn) external {
+        uint256 _id, PayFeesIn payFeesIn) external {
 
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(_receiver),
-            data: abi.encodeWithSignature("mintTokens(address)", msg.sender),
+            data: abi.encodeWithSignature("spaceTravel(address,uint256,uint256)", msg.sender, _id, space.getLastRequestId()),
             tokenAmounts: new Client.EVMTokenAmount[](0),
             extraArgs: "",
             feeToken: payFeesIn == PayFeesIn.Link ? address(linkToken) : address(0)

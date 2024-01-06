@@ -5,7 +5,7 @@ import { CCIPReceiver } from "@chainlink/contracts-ccip/src/v0.8/ccip/applicatio
 import { INFT } from "./interfaces/INFT.sol";
 import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 
-contract DESTINATION_MINTER is CCIPReceiver {
+contract DestinationMinter is CCIPReceiver {
 
     INFT public game;
 
