@@ -4,7 +4,8 @@ async function main() {
 
     // Deploying NFT
     let NFT = await ethers.getContractFactory('IntergalacticTravel');
-    const nft = await NFT.deploy('8318')
+    const nft = await NFT.deploy('8318',
+        '0x9D95B165eCefa55c21Df4cFfc9718781d36B4A6c')
     await nft.waitForDeployment()
     console.log("NFT Address:", nft.target)
 

@@ -4,10 +4,12 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 // @title This is the nft contract that would mint the nft(s) and include the game logics
-contract IntergalacticTravel is ERC721, VRFConsumerBaseV2 {
+contract IntergalacticTravel is ERC721, VRFConsumerBaseV2, Ownable {
 
+    mapping(address source => bool sourcePermission) public isSourcePermitted;
     mapping(uint256 nftId => bool burned) public isInsidePod;
     mapping(uint256 requestId => uint256 resutls) public s_results;
 
@@ -27,10 +29,15 @@ contract IntergalacticTravel is ERC721, VRFConsumerBaseV2 {
     uint256[] public requestIds;
     uint256 public lastRequestId;
 
-    constructor(uint64 _subscriptionId) ERC721("Spacemen", "SPC")
-    VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625){
+    constructor(uint64 _subscriptionId, address _owner) ERC721("Spacemen", "SPC")
+    VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) Ownable(_owner) {
         s_subscriptionId = _subscriptionId;
         COORDINATOR = VRFCoordinatorV2Interface(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625);
+    }
+
+    modifier onlySource() {
+        require(isSourcePermitted[msg.sender], 'Not Source Contract');
+        _;
     }
 
     function mintTokens(address _to, uint id) public {
@@ -40,10 +47,10 @@ contract IntergalacticTravel is ERC721, VRFConsumerBaseV2 {
         }
     }
 
-    function spaceTravel(address _to, uint256 _id, uint256 _requestId) external {
+    function spaceTravel(address _to, uint256 _id, uint256 _newId) external onlySource() {
         require(isInsidePod[_id], 'Enter pod to travel');
         isInsidePod[_id] = false;
-        _safeMint(_to, s_results[_requestId]);
+        _safeMint(_to, _newId);
     }
 
     function enterPod(uint _id) external returns(uint256 requestId){
@@ -66,11 +73,19 @@ contract IntergalacticTravel is ERC721, VRFConsumerBaseV2 {
         return lastRequestId;
     }
 
+    function getResultOnRequest(uint256 _requestId) external view returns(uint256) {
+        return s_results[_requestId];
+    }
+
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
         // transform the result to a number between 1 and 20 inclusively
         uint256 d20Value = (randomWords[0] % 20) + 1;
         // assign the transformed value to the address in the s_results mapping variable
         s_results[requestId] = d20Value;
+    }
+
+    function permitSource(address _source) external onlyOwner {
+        isSourcePermitted[_source] = true;
     }
 
 }

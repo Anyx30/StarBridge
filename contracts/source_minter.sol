@@ -7,6 +7,7 @@ import { LinkTokenInterface } from "@chainlink/contracts/src/v0.8/shared/interfa
 import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/INFT.sol";
+import { console } from "hardhat/console.sol";
 
 contract SourceMinter {
 
@@ -50,9 +51,13 @@ contract SourceMinter {
     function mintOnDestinationChain(uint64 _destinationChainSelector, address _receiver,
         uint256 _id, PayFeesIn payFeesIn) external {
 
+        uint256 lastReq = space.getLastRequestId();
+        uint256 result = space.getResultOnRequest(lastReq);
+        console.log('Result', result);
+
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(_receiver),
-            data: abi.encodeWithSignature("spaceTravel(address,uint256,uint256)", msg.sender, _id, space.getLastRequestId()),
+            data: abi.encodeWithSignature("spaceTravel(address,uint256,uint256)", msg.sender, _id, result),
             tokenAmounts: new Client.EVMTokenAmount[](0),
             extraArgs: "",
             feeToken: payFeesIn == PayFeesIn.Link ? address(linkToken) : address(0)
