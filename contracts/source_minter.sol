@@ -48,16 +48,15 @@ contract SourceMinter {
         allowlistedSourceChains[_destinationChainSelector] = allowed;
     }
 
-    function mintOnDestinationChain(uint64 _destinationChainSelector, address _receiver,
-        uint256 _id, PayFeesIn payFeesIn) external {
+    function mintOnDestinationChain(uint64 _destinationChainSelector, address _receiver, PayFeesIn payFeesIn) external {
 
         uint256 lastReq = space.getLastRequestId();
         uint256 result = space.getResultOnRequest(lastReq);
-        console.log('Result', result);
+        console.log('Result:', result);
 
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(_receiver),
-            data: abi.encodeWithSignature("spaceTravel(address,uint256,uint256)", msg.sender, _id, result),
+            data: abi.encodeWithSignature("spaceTravel(address,uint256)", msg.sender, result),
             tokenAmounts: new Client.EVMTokenAmount[](0),
             extraArgs: "",
             feeToken: payFeesIn == PayFeesIn.Link ? address(linkToken) : address(0)

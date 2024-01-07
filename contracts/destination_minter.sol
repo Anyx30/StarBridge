@@ -2,23 +2,23 @@
 pragma solidity ^0.8.20;
 
 import { CCIPReceiver } from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
-import { INFT } from "./interfaces/INFT.sol";
+import { INFT2 } from "./interfaces/INFT2.sol";
 import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 
 contract DestinationMinter is CCIPReceiver {
 
-    INFT public game;
+    INFT2 public nft;
 
     event MintSuccessful();
 
     constructor(address _router, address _nft) CCIPReceiver(_router) {
-        game = INFT(_nft);
+        nft = INFT2(_nft);
     }
 
     function _ccipReceive(
         Client.Any2EVMMessage memory message
     ) internal override {
-        (bool success, ) = address(game).call(message.data);
+        (bool success, ) = address(nft).call(message.data);
         require(success);
         emit MintSuccessful();
     }

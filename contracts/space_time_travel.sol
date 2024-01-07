@@ -9,7 +9,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 // @title This is the nft contract that would mint the nft(s) and include the game logics
 contract IntergalacticTravel is ERC721, VRFConsumerBaseV2, Ownable {
 
-    mapping(address source => bool sourcePermission) public isSourcePermitted;
     mapping(uint256 nftId => bool burned) public isInsidePod;
     mapping(uint256 requestId => uint256 resutls) public s_results;
 
@@ -35,22 +34,11 @@ contract IntergalacticTravel is ERC721, VRFConsumerBaseV2, Ownable {
         COORDINATOR = VRFCoordinatorV2Interface(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625);
     }
 
-    modifier onlySource() {
-        require(isSourcePermitted[msg.sender], 'Not Source Contract');
-        _;
-    }
-
     function mintTokens(address _to, uint id) public {
         _safeMint(_to, id);
         unchecked {
             s_tokensMinted++;
         }
-    }
-
-    function spaceTravel(address _to, uint256 _id, uint256 _newId) external onlySource() {
-        require(isInsidePod[_id], 'Enter pod to travel');
-        isInsidePod[_id] = false;
-        _safeMint(_to, _newId);
     }
 
     function enterPod(uint _id) external returns(uint256 requestId){
@@ -82,10 +70,6 @@ contract IntergalacticTravel is ERC721, VRFConsumerBaseV2, Ownable {
         uint256 d20Value = (randomWords[0] % 20) + 1;
         // assign the transformed value to the address in the s_results mapping variable
         s_results[requestId] = d20Value;
-    }
-
-    function permitSource(address _source) external onlyOwner {
-        isSourcePermitted[_source] = true;
     }
 
 }

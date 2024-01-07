@@ -6,7 +6,7 @@ async function main() {
   console.log("Deployer address:", deployer.address)
 
   let game = await ethers.getContractFactory("IntergalacticTravel");
-  const nft = game.attach('0x8447da8ac505e52A087692eeC007220837b90f01')
+  const nft = game.attach('0xfeCDa8aC30C09bC4744DE495E596321D52D07C10')
   const tx1 = await nft.enterPod(1);
   await tx1.wait();
 
@@ -15,14 +15,10 @@ async function main() {
 
   let Source_Minter = await ethers.getContractFactory('SourceMinter');
   const source = await Source_Minter.deploy(s_router, s_link,
-      '0x8447da8ac505e52A087692eeC007220837b90f01');
+      '0xfeCDa8aC30C09bC4744DE495E596321D52D07C10');
   await source.waitForDeployment()
 
   console.log("Source Minter Address:", source.target)
-
-  const tx2 = await nft.permitSource(source.target);
-  await tx2.wait();
-  console.log("Source Permission granted for travel");
 
 }
 
